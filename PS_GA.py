@@ -437,34 +437,35 @@ class GeneticAlgorithm_ProgramSchedule:
     #|------------------------------- PARAMETERS --------------------------------|
     #| maxGenerations   -> Maximum amount of generations                         |
     #| populationSize   -> Initial population size                               |
-    #| geneShift        -> Genome mutation rule                                  |
     #| mutationMethod   -> Mutation method: (1) Shift or (2) Shuffle             |
     #| problemGoal      -> Goals: (1) Teachers, (2) Classrooms or (3) Both       |
     #| reproductionRate -> Rate for number of couples used at cross-over         |
     #|---------------------------------------------------------------------------|
     def __init__(self, maxGenerations, populationSize, mutationMethod=1, problemGoal=3, reproductionRate=0.5):
-        if(mutationMethod is not 1 and mutationMethod is not 2):
-            mutationMethod = 1
+        self.maxGenerations    = maxGenerations
+        self.populationSize    = populationSize
+        self.mutationMethod    = mutationMethod
+        self.problemGoal       = problemGoal
+        self.couplesSize       = int(self.populationSize*reproductionRate)
         
-        if(problemGoal is not 1 and problemGoal is not 2 and problemGoal is not 3):
-            problemGoal is 3
+        self.fitnessResults    = list()
+        self.lessCollisions    = WEEK_CLASSES_SIZE**WEEK_CLASSES_SIZE
+        
+        if(self.mutationMethod is not 1 and self.mutationMethod is not 2):
+            self.mutationMethod = 1
+        
+        if(self.problemGoal is not 1 and self.problemGoal is not 2 and self.problemGoal is not 3):
+            self.problemGoal is 3
             
-        if(problemGoal is 1):
+        if(self.problemGoal is 1):
             self.teacherIncrement   = 1
             self.classroomIncrement = 0
-        elif(problemGoal is 2):
+        elif(self.problemGoal is 2):
             self.teacherIncrement   = 0
             self.classroomIncrement = 1
         else:
             self.teacherIncrement   = 1
             self.classroomIncrement = 1
-        
-        self.maxGenerations    = maxGenerations
-        self.populationSize    = populationSize
-        self.mutationMethod    = mutationMethod
-        self.couplesSize       = int(self.populationSize*reproductionRate)
-        self.fitnessResults    = list()
-        self.lessCollisions    = WEEK_CLASSES_SIZE**WEEK_CLASSES_SIZE
         
     def geneticRun(self, program):
         ### Initial Population
@@ -597,7 +598,8 @@ class GeneticAlgorithm_ProgramSchedule:
         seqWeek = []
         for week in range(len(schedule[0])):
             for classTime in range(len(schedule[0][0])):
-                seqWeek.append(schedule[semesterToMutate][week][classTime])
+                if(schedule[semesterToMutate][week][classTime] is not None):
+                    seqWeek.append(schedule[semesterToMutate][week][classTime])
         # shift (geneShift times) the seqWeek list
         for i in range(geneShift):
             last = seqWeek.pop()
@@ -606,16 +608,43 @@ class GeneticAlgorithm_ProgramSchedule:
         cont = 0
         for week in range(len(schedule[0])):
             for classTime in range(len(schedule[0][0])):
-                schedule[semesterToMutate][week][classTime] = seqWeek[cont]
-                cont+=1
+                if(schedule[semesterToMutate][week][classTime] is not None):
+                    schedule[semesterToMutate][week][classTime] = seqWeek[cont]
+                    cont+=1
+        # shift (geneShift times) the seqWeek list and update shifted list on schedule (classrooms)
+        if(self.problemGoal==3):
+            for i in range(geneShift):
+                last = seqWeek.pop()
+                seqWeek.insert(0, last)
+            cont = 0
+            for week in range(len(schedule[0])):
+                for classTime in range(len(schedule[0][0])):
+                    if(schedule[semesterToMutate][week][classTime] is not None):
+                        schedule[semesterToMutate][week][classTime].classroom = seqWeek[cont].classroom
+                        cont+=1
         # return schedule
         return schedule
     
     def mutation_shuffle(self, schedule):
         # select semester to mutate
         semesterToMutate = random.randint(0,len(schedule)-1)
-        #shuffle the semester's week
+        # shuffle the semester's week (courses)
         random.shuffle(schedule[semesterToMutate])
+        # shuffle the semester's week (classrooms)
+        if(self.problemGoal==3):
+            schedule2 = copy.deepcopy(schedule)
+            random.shuffle(schedule2[semesterToMutate])
+            seq = list()
+            cont = 0
+            for week in range(len(schedule2[0])):
+                for classTime in range(len(schedule2[0][0])):
+                    if(schedule2[semesterToMutate][week][classTime] is not None):
+                        seq.append(schedule2[semesterToMutate][week][classTime])
+            for week in range(len(schedule[0])):
+                for classTime in range(len(schedule[0][0])):
+                    if(schedule[semesterToMutate][week][classTime] is not None):
+                        schedule[semesterToMutate][week][classTime].classroom = seq[cont].classroom      
+                        cont += 1
         # return schedule
         return schedule
 
