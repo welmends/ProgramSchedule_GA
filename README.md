@@ -5,7 +5,7 @@ Implementation of the Timetable Problem (Program Schedule) with Genetic Algorith
 This repository provides an Python implementation using Jupyter Notebook
 
 ### Prerequisites
-  - Python 3.5 or newer
+  - **Python 3.5** or newer
 
 ### Genetic Algorithm parameters
   -  **maxGeneration**: Maximum amount of generations
@@ -23,7 +23,7 @@ Here is presented an output for the program using the following parameters:
   -  **problemGoal**: Goals: 3 *(Both teacher and classrooms)*
   -  **reproductionRate**: 0.5 *(Default value)*
   
-The [solution](https://github.com/welmends/ProgramSchedule_GA/blob/master/solution_teacher_classroom.txt) is presented below:
+A [solution](https://github.com/welmends/ProgramSchedule_GA/blob/master/solution_teacher_classroom.txt) is presented below:
 
 ```shell
 Parameters: GeneticAlgorithm_ProgramSchedule(99999999999999999999999999999999999,10,2,3)
